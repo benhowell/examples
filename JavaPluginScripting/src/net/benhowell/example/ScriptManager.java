@@ -179,7 +179,7 @@ public class ScriptManager {
   /**
    * Sets the engine type for this ScriptManager.
    * @param engineName the name of the engine to set.
-   * NOTE: if using python, you need jython installed
+   * NOTE: if using python, you need jython installed.
    */
   private void setEngine(String engineName) {
     // Special hack to set gateway lib path for jython
