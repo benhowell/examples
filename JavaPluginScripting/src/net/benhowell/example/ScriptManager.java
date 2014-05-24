@@ -1,9 +1,6 @@
 package net.benhowell.example;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +14,31 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.python.core.Py;
-import org.python.core.PySystemState;
+
+/**
+ ScriptManager allows execution of scripts such as JavaScript and Python Ruby,
+ Groovy, Judoscript, Haskell, Tcl, Awk and PHP amongst others. Java8 supports
+ over 30 different language engines.
+
+ This implementation uses dynamic invocation of individual functions and
+ objects within scripts using Invocable where available, and where not
+ available, implements a graceful fallback strategy to compilation of script
+ (if available) and passing the function name to execute to the script.
+ Where neither Invocable nor Compilable are available, scripts are interpreted
+ each time they are run.
+
+ We can expose our application objects as global variables to a script. The
+ script can access each variable and can call public methods on it. The syntax
+ to access Java objects, methods and fields is dependent on the scripting
+ language used.
+
+ We can pass any object, value or variable to the script using the following:
+ ScriptManager.setParameter("parameterName", Object);
+
+ We can access any object, value or variable passed to or created by the script
+ itself from java using the following:
+ ScriptManager.getParameter("parameterName");
+ */
 
 
 /**
@@ -28,28 +48,37 @@ public class ScriptManager {
 
   private ScriptEngineManager manager;
   private String engineName;
+  private String name;
   private String script;
   private ScriptEngine engine;
   private CompiledScript compiledScript;
   private Invocable invocable;
-
 
   /**
    * Constructor. Creates script engine manager, loads script and sets delegate
    * parameter before script is parsed.
    * @param engineName the engine name that runs the script (e.g. "python",
    * "javascript", etc).
-   * @param script the plugin code URL (file:// or http://)
+   * @param scriptPath the plugin path
    * @param delegate the delegate containing application functions callable
    * from scripts.
    */
-  public ScriptManager(String engineName, String script, ScriptDelegate delegate) {
+  public ScriptManager(String engineName, File scriptPath, ScriptDelegate delegate) {
     this.manager = new ScriptEngineManager();
     this.engineName = engineName;
-    this.script = script;
+    this.name = scriptPath.getName();
+    this.script = scriptPath.getAbsolutePath();
     this.setEngine(engineName);
     this.setParameter("delegate", delegate);
     this.loadScript();
+  }
+
+  /**
+   * Retrieves the name of the plugin.
+   * @return the name of the plugin.
+   */
+  public String getName(){
+    return this.name;
   }
 
   /**
@@ -169,25 +198,10 @@ public class ScriptManager {
   }
 
   /**
-   * Sets the engine name that runs the script (e.g. "python", "javascript", etc).
-   * @param engineName the name of the engine that runs the script.
-   */
-  private void setEngineName(String engineName) {
-    this.engineName = engineName;
-  }
-
-  /**
    * Sets the engine type for this ScriptManager.
    * @param engineName the name of the engine to set.
-   * NOTE: if using python, you need jython installed.
    */
   private void setEngine(String engineName) {
-    // Special hack to set gateway lib path for jython
-    if(engineName.equalsIgnoreCase("python")) {
-      PySystemState engineSys = new PySystemState();
-      engineSys.path.append(Py.newString("/usr/lib/python2.7/"));
-      Py.setSystemState(engineSys);
-    }
     this.engine = manager.getEngineByName(engineName);
   }
 
@@ -221,42 +235,22 @@ public class ScriptManager {
 
   /**
    * Retrieves the script and stores it as a String for further use.
-   * @param code the script itself or the location of the script.
+   * @param scriptPath the script itself or the location of the script.
    */
-  private void setScript(String code) {
-    if(code != null) {
+  private void setScript(String scriptPath) {
+    if(scriptPath != null) {
       try {
         BufferedInputStream bis;
-        if(code.startsWith("http")) {
-          URL url;
-          url = new URL(code);
-          URLConnection con = url.openConnection();
-          bis = new BufferedInputStream(con.getInputStream());
-        }
-        else if(code.startsWith("file")) {
-          String filePath = new File("").getAbsolutePath();
-          bis = new BufferedInputStream(new FileInputStream(filePath+code.substring(7)));
-        }
-        else {
-          //assume inline code snippet
-          this.script = code;
-          return;
-        }
+        bis = new BufferedInputStream(new FileInputStream(scriptPath));
         InputStreamReader in = new InputStreamReader(bis);
         this.script = convertStreamToString(in);
-      }
-      catch (MalformedURLException e) {
-        System.out.println("error whilst retrieving script from file: " + e.toString());
       }
       catch (FileNotFoundException e) {
         System.out.println("error whilst retrieving script from file: " + e.toString());
       }
-      catch (IOException e) {
-        System.out.println("error whilst retrieving script from file: " + e.toString());
-      }
     }
     else {
-      System.out.println("code is null");
+      System.out.println("scriptPath is null");
     }
   }
 
@@ -284,7 +278,6 @@ public class ScriptManager {
    * @param script the script to compile.
    */
   private void setCompilable(String script) {
-    //if available, compile script.
     this.compiledScript = null;
     if(script == null) {
       System.out.println("script code has not been set");
