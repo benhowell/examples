@@ -54,3 +54,4 @@ class Cam():
 if __name__ == "__main__":
   url = 'http://192.168.2.1/?action=stream'
   cam = Cam(url)
+  cam.start()
