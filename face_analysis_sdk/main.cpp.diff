@@ -1,0 +1,64 @@
+26,27c26,27
+< #include <sys/wait.h>
+< #include <unistd.h>
+---
+> #include <windows.h>
+> #include <process.h>
+67a68
+> 
+72,76c73,81
+<     pid_t new_pid = fork();
+<     if (new_pid == -1) 
+<       throw make_runtime_error("Unable to fork a new process: %s.", strerror(errno));
+< 
+<     if (new_pid == 0) { // child process
+---
+>     
+>     STARTUPINFO si;
+>     PROCESS_INFORMATION pi;
+> 
+>     ZeroMemory( &si, sizeof(si) );
+>     si.cb = sizeof(si);
+>     ZeroMemory( &pi, sizeof(pi) );
+>     
+>     if(!CreateProcess(NULL, "", NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)){ //child process
+83,84c88,89
+< 	argv[i + 1] = (char *)it->c_str();
+< 	it++;
+---
+>         argv[i + 1] = (char *)it->c_str();
+>         it++;
+86,99d90
+<       
+<       int rv = execvp(command.c_str(), argv);
+<       if (rv == -1) 
+< 	throw make_runtime_error("Unable to create new process: %s.", strerror(errno));
+<     } else { // parent process
+<       int status;
+<       pid_t wait_pid = waitpid(new_pid, &status, 0);      
+<       if (wait_pid == -1)
+< 	throw make_runtime_error("Unable to wait for process.");
+< 
+<       if (WEXITSTATUS(status) != 0) {
+< 	std::stringstream s;
+< 	s << command << " ";
+< 	std::copy(arguments.begin(), arguments.end(), std::ostream_iterator<std::string>(s, " "));
+101,102c92,98
+< 	throw make_runtime_error("map-list failed to execute the following command successfully: %s", s.str().c_str());
+<       }
+---
+>       int rv = _execvp(command.c_str(), argv);
+>       if (rv == -1) 
+>         throw make_runtime_error("Unable to create new process: %s.", strerror(errno));
+>     }
+>     else { // parent process
+>       throw make_runtime_error("CreateProcess failed (%d).\n", GetLastError() );
+>       return;
+103a100,106
+>     
+>     // Wait until child process exits.
+>     WaitForSingleObject( pi.hProcess, INFINITE );
+> 
+>     // Close process and thread handles. 
+>     CloseHandle( pi.hProcess );
+>     CloseHandle( pi.hThread );
