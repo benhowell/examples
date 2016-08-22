@@ -285,9 +285,10 @@ Demo0.defaultProps = {
             thumbnailHeight: 320,
             caption: "A photo by Matthew Wiebe. (unsplash.com)"
         }
-    ])
+    ]).splice(0,12)
 };
 
 ReactDOM.render(<Demo0 />, document.getElementById('demo0'));
+
 
 ```
