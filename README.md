@@ -4,7 +4,7 @@ A bunch of example projects, usually complete, and usually for article, tutorial
 http://www.benhowell.net
 
 
-```jsx
+```js
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Gallery from '../src/Gallery';
