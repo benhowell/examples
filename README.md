@@ -12,29 +12,13 @@ import ReactDOM from 'react-dom';
 import Gallery from '../src/Gallery';
 
 
-class Demo1 extends React.Component {
+class Demo2 extends React.Component {
     constructor(props){
         super(props);
 
         this.state = {
             images: this.props.images
         };
-
-        this.onImageSelected = this.onImageSelected.bind(this);
-
-    }
-
-    onImageSelected (index, image) {
-        var images = this.state.images.slice();
-        var img = images[index];
-        if(img.hasOwnProperty("isSelected"))
-            img.isSelected = !img.isSelected;
-        else
-            img.isSelected = true;
-
-        this.setState({
-            images: images
-        });
     }
 
     render () {
@@ -47,13 +31,13 @@ class Demo1 extends React.Component {
                     overflow: "auto"}}>
                 <Gallery
             images={this.state.images}
-            onImageSelected={this.onImageSelected}/>
+            enableImageSelection={false}/>
                 </div>
         );
     }
 }
 
-Demo1.propTypes = {
+Demo2.propTypes = {
     images: React.PropTypes.arrayOf(
         React.PropTypes.shape({
             src: React.PropTypes.string.isRequired,
@@ -67,13 +51,14 @@ Demo1.propTypes = {
     ).isRequired
 };
 
-Demo1.defaultProps = {
+Demo2.defaultProps = {
     images: shuffleArray([
         {
             src: "https://c5.staticflickr.com/9/8768/28941110956_b05ab588c1_b.jpg",
             thumbnail: "https://c5.staticflickr.com/9/8768/28941110956_b05ab588c1_n.jpg",
             thumbnailWidth: 240,
             thumbnailHeight: 320,
+            isSelected: true,
             caption: "8H (gratisography.com)"
         },
         {
@@ -88,6 +73,7 @@ Demo1.defaultProps = {
             thumbnail: "https://c7.staticflickr.com/9/8569/28941134686_d57273d933_n.jpg",
             thumbnailWidth: 320,
             thumbnailHeight: 148,
+            isSelected: true,
             caption: "315H (gratisography.com)"
         },
         {
@@ -95,7 +81,6 @@ Demo1.defaultProps = {
             thumbnail: "https://c6.staticflickr.com/9/8342/28897193381_800db6419e_n.jpg",
             thumbnailWidth: 320,
             thumbnailHeight: 213,
-            isSelected: true,
             caption: "201H (gratisography.com)"
         },
         {
@@ -110,7 +95,6 @@ Demo1.defaultProps = {
             thumbnail: "https://c7.staticflickr.com/9/8785/28687743710_3580fcb5f0_n.jpg",
             thumbnailWidth: 320,
             thumbnailHeight: 113,
-            isSelected: true,
             caption: "Red Zone - Paris (Tom Eversley - isorepublic.com)"
         },
         {
@@ -118,6 +102,7 @@ Demo1.defaultProps = {
             thumbnail: "https://c6.staticflickr.com/9/8520/28357073053_cafcb3da6f_n.jpg",
             thumbnailWidth: 313,
             thumbnailHeight: 320,
+            isSelected: true,
             caption: "Wood Glass (Tom Eversley - isorepublic.com)"
         },
         {
@@ -125,13 +110,12 @@ Demo1.defaultProps = {
             thumbnail: "https://c8.staticflickr.com/9/8104/28973555735_ae7c208970_n.jpg",
             thumbnailWidth: 320,
             thumbnailHeight: 213,
-            isSelected: true,
             caption: "Flower Interior Macro (Tom Eversley - isorepublic.com)"
         }
     ])
 };
 
-ReactDOM.render(<Demo1 />, document.getElementById('demo1'));
+ReactDOM.render(<Demo2 />, document.getElementById('demo2'));
 
 
 ```
